@@ -41,3 +41,11 @@ export function setupBot() {
     "TODO"
   );
 }
+
+export function getAnalytics(): { [key: string]: string } {
+  const scriptProperties = PropertiesService.getScriptProperties();
+  const allProperties = scriptProperties.getProperties();
+
+  Logger.log(allProperties); // View in Apps Script Logs
+  return allProperties; // Or return as JSON for an API endpoint
+}
