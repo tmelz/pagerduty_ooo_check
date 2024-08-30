@@ -77,7 +77,7 @@ export namespace Orchestrator {
       `\n\n• Schedule: <${oncall.schedule.html_url}|${oncall.schedule.summary}>` +
       `\n• Oncall start: ${startDate.toDateString()}` +
       `\n• Oncall end: ${endDate.toDateString()}` +
-      `\n\nFeel free to reach out to #pagerduty-police with any questions or feedback.`;
+      `\n\nFeel free to reach out to <#C07K3U33NDT> with any questions or feedback.`;
 
     let transformedEmail = oncall.user.email;
     EventUtil.BLOCK_EMAIL_DOMAINS.forEach((domain) => {
