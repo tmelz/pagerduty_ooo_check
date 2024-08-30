@@ -91,12 +91,23 @@ export namespace CheckOOO {
       );
       Log.log(`Debug: theirOOOStart=${theirOOOStart}`);
       theirOOOStart.setHours(0, 0, 0, 0);
-      const theirOOOEnd = new Date(theirEvent.end.date);
+      let theirOOOEnd = new Date(theirEvent.end.date);
+      // Super janky, but Workday integration does odd things. Almost all the time
+      // it creates multiple single day OOO events. But sometimes for a one day OOO
+      // it creates a single day OOO that says something like start: 8-28 and end:8-29
+      // even though the intent is just to be all day 8-28. So if it's a workday event
+      // just assume it is a single day event to work around that odd case.
+      if (theirEvent.summary === CheckOOO.OOO_WORKDAY_EVENT_TITLE) {
+        theirOOOEnd = new Date(theirOOOStart);
+      }
       theirOOOEnd.setMinutes(
         theirOOOEnd.getMinutes() + theirOOOEnd.getTimezoneOffset()
       );
       Log.log(`Debug: theirOOOEnd=${theirOOOEnd}`);
       theirOOOEnd.setHours(0, 0, 0, 0);
+
+      Log.log(JSON.stringify(theirEvent));
+      Log.log(JSON.stringify(myEvent));
 
       // TODO NOTE this is forked from original code and I need to backport / library-ify it
       if (
