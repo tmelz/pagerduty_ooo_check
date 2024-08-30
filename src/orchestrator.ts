@@ -32,7 +32,9 @@ export namespace Orchestrator {
       Pagerduty.listOnCalls(start.toDateString(), end.toDateString(), [
         config.scheduleId,
       ])
-        ?.filter((oncall) => Orchestrator.checkIsOOODuringOncall(oncall))
+        ?.filter((oncall) =>
+          Orchestrator.checkIsOOODuringOncall(oncall, config.strictMode)
+        )
         .forEach((oncall) => {
           oooOncalls.push(oncall);
           Analytics.recordOOODetection();
@@ -45,7 +47,10 @@ export namespace Orchestrator {
     });
   }
 
-  export function checkIsOOODuringOncall(oncall: Pagerduty.OnCall): boolean {
+  export function checkIsOOODuringOncall(
+    oncall: Pagerduty.OnCall,
+    strictMode: boolean
+  ): boolean {
     const startDate = new Date(oncall.start);
     const endDate = new Date(oncall.end);
     const email = oncall.user.email;
@@ -58,7 +63,11 @@ export namespace Orchestrator {
       end: { dateTime: endDate.toISOString() },
     } as GoogleAppsScript.Calendar.Schema.Event;
 
-    const hasOutOfOffice = CheckOOO.checkIsOOODuringEvent(fakeEvent, email);
+    const hasOutOfOffice = CheckOOO.checkIsOOODuringEvent(
+      fakeEvent,
+      email,
+      strictMode
+    );
     Log.log(`\thasOutOfOffice: ${hasOutOfOffice}`);
     return hasOutOfOffice === true;
   }
@@ -95,7 +104,7 @@ export namespace Orchestrator {
         Log.log(
           `✉️ User doesn't seem to be OOO, sending DM (${oncall.user.email})`
         );
-        // send directly to me for now for safety
+        // send directly to me for now for testing
         // Slack.sendDirectMessage("U044HT4GLVD", message);
         Slack.sendDirectMessage(slackUserId, message);
         Analytics.recordSentDM();

@@ -5,6 +5,7 @@ export namespace Config {
   export type OncallConfig = {
     scheduleName: string;
     scheduleId: string;
+    strictMode: boolean;
   };
 
   export function loadConfigs(): OncallConfig[] {
@@ -30,6 +31,7 @@ export namespace Config {
       const config: OncallConfig = {
         scheduleName: row[0].toString(),
         scheduleId: row[1].toString(),
+        strictMode: row[2].toString().trim().toLowerCase() === "true",
       };
       configs.push(config);
     }

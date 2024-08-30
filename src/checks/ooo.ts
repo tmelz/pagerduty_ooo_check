@@ -11,12 +11,14 @@ export namespace CheckOOO {
 
   type CompareEvents = (
     myEvent: GoogleAppsScript.Calendar.Schema.Event,
-    theirEvent: GoogleAppsScript.Calendar.Schema.Event
+    theirEvent: GoogleAppsScript.Calendar.Schema.Event,
+    ignoreShortOOOEvents: boolean
   ) => boolean;
 
   export function checkIsOOODuringEvent(
     event: GoogleAppsScript.Calendar.Schema.Event,
     theirEmail: string,
+    ignoreShortOOOEvents = false,
     getEvents: GetEvents.EventFetcherWithError = GetEvents.getEventsForDateRangeCustomCalendarWithErrorCatch,
     checkIsOOOAndOverlaps: CompareEvents = checkIfEventIsOOOAndOverlaps
   ): boolean | undefined {
@@ -40,7 +42,7 @@ export namespace CheckOOO {
 
     let hasOOOoverlap = false;
     for (const theirEvent of theirEventsDuringMeeting) {
-      if (checkIsOOOAndOverlaps(event, theirEvent)) {
+      if (checkIsOOOAndOverlaps(event, theirEvent, ignoreShortOOOEvents)) {
         Log.log("👮‍♂️ Found OOO an overlapping event");
         hasOOOoverlap = true;
         break;
@@ -52,7 +54,8 @@ export namespace CheckOOO {
 
   export function checkIfEventIsOOOAndOverlaps(
     myEvent: GoogleAppsScript.Calendar.Schema.Event,
-    theirEvent: GoogleAppsScript.Calendar.Schema.Event
+    theirEvent: GoogleAppsScript.Calendar.Schema.Event,
+    ignoreShortOOOEvents: boolean = false
   ): boolean {
     Log.log(`🔎 Examining their event: 📅 "${theirEvent.summary}"`);
     LogLevel.DEBUG && Log.log(`\\Raw details: "${theirEvent}"`);
@@ -134,6 +137,15 @@ export namespace CheckOOO {
     ) {
       const theirOOOStart = new Date(theirEvent.start.dateTime);
       const theirOOOEnd = new Date(theirEvent.end.dateTime);
+
+      // Ignore OOO events that are just an 1.5 hours
+      if (
+        ignoreShortOOOEvents &&
+        (theirOOOEnd.getTime() - theirOOOStart.getTime()) / 1000 / 60 / 60 <=
+          1.5
+      ) {
+        return false;
+      }
 
       const myEventStart = new Date(myEvent.start.dateTime);
       const myEventEnd = new Date(myEvent.end.dateTime);
