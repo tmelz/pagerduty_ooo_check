@@ -71,11 +71,16 @@ export namespace CheckOOO {
     if (
       theirEvent.start?.date &&
       theirEvent.end?.date &&
-      myEvent.start?.dateTime
+      myEvent.start?.dateTime &&
+      myEvent.end?.dateTime
     ) {
-      const myEventDate = new Date(myEvent.start.dateTime);
-      Log.log(`Debug: myEventDate=${myEventDate}`);
-      myEventDate.setHours(0, 0, 0, 0);
+      const myEventStartDate = new Date(myEvent.start.dateTime);
+      const myEventEndDate = new Date(myEvent.end.dateTime);
+      Log.log(
+        `Debug: myEventStartDate=${myEventStartDate} myEventEndDate=${myEventEndDate}`
+      );
+      myEventStartDate.setHours(0, 0, 0, 0);
+      myEventEndDate.setHours(0, 0, 0, 0);
       // Ugh this was annoying and janky but it works :shrug:. Basically these values are simple dates like "09-03-2023", but
       // javascript will interpret them as UTC and subtract 7 hours from pacific, so effectively the dates are -1.
       // Ugly hack for that is add back the delta between UTC and current timezone. Probably a much better way but this seems
@@ -93,15 +98,19 @@ export namespace CheckOOO {
       Log.log(`Debug: theirOOOEnd=${theirOOOEnd}`);
       theirOOOEnd.setHours(0, 0, 0, 0);
 
-      if (myEventDate <= theirOOOEnd && myEventDate >= theirOOOStart) {
+      // TODO NOTE this is forked from original code and I need to backport / library-ify it
+      if (
+        (myEventStartDate >= theirOOOStart && myEventEndDate <= theirOOOEnd) ||
+        (theirOOOStart >= myEventStartDate && theirOOOEnd <= myEventEndDate)
+      ) {
         Log.log(
-          `✅ Yep, that OOO event overlaps! Will modify and flag the even (only date check, not mins/hours): oooStart=${theirOOOStart}, oooEnd=${theirOOOEnd}, myEventDate=${myEventDate}`
+          `✅ Yep, that OOO event overlaps! Will modify and flag the even (only date check, not mins/hours): oooStart=${theirOOOStart}, oooEnd=${theirOOOEnd}, myEventDate=${myEventStartDate}`
         );
 
         return true;
       } else {
         Log.log(
-          `👎 No, that OOO doensnt appear to overlap (only date check, not mins/hours): oooStart=${theirOOOStart}, oooEnd=${theirOOOEnd}, myEventDate=${myEventDate}`
+          `👎 No, that OOO doensnt appear to overlap (only date check, not mins/hours): oooStart=${theirOOOStart}, oooEnd=${theirOOOEnd}, myEventDate=${myEventStartDate}`
         );
         return false;
       }

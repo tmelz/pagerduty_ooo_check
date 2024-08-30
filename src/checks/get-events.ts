@@ -132,9 +132,9 @@ export namespace GetEvents {
         return [];
       }
 
-      Log.log(
-        `Got ${events.length} events (note this result will be capped at ${GetEvents.MAX_EVENTS_ALLOWED_TO_FETCH} for safety)`
-      );
+      // Log.log(
+      //   `Got ${events.length} events (note this result will be capped at ${GetEvents.MAX_EVENTS_ALLOWED_TO_FETCH} for safety)`
+      // );
       const cappedResults = events.slice(
         0,
         GetEvents.MAX_EVENTS_ALLOWED_TO_FETCH

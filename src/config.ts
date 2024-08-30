@@ -2,19 +2,12 @@
 export namespace Config {
   export const CONFIG_SPREADSHEET_KEY = "CONFIG_SPREADSHEET";
 
-  export type StandupConfig = {
-    calendarId: string;
-    titleSubstring: string;
-    standupBlurb: string;
-    channelId: string;
-    userGroupId: string;
-    nudgeMessage: string;
-    reminderOffsets: number[];
-    notesDocumentUrl: string;
-    documentHeader: string;
+  export type OncallConfig = {
+    scheduleName: string;
+    scheduleId: string;
   };
 
-  export function loadConfigs(): StandupConfig[] {
+  export function loadConfigs(): OncallConfig[] {
     const spreadSheetId = PropertiesService.getScriptProperties().getProperty(
       Config.CONFIG_SPREADSHEET_KEY
     );
@@ -24,26 +17,19 @@ export namespace Config {
       );
     }
     const spreadsheet = SpreadsheetApp.openById(spreadSheetId);
-    const sheet = spreadsheet.getActiveSheet();
+    const sheet = spreadsheet.getSheetByName("official");
+    if (sheet === null) {
+      throw new Error("'official' tab not found in the spreadsheet.");
+    }
     const data = sheet.getDataRange().getValues();
 
-    const configs: StandupConfig[] = [];
+    const configs: OncallConfig[] = [];
 
     for (let i = 1; i < data.length; i++) {
       const row = data[i];
-      const config: StandupConfig = {
-        calendarId: row[0].toString(),
-        titleSubstring: row[1].toString(),
-        standupBlurb: row[2].toString(),
-        channelId: row[3].toString(),
-        userGroupId: row[4].toString(),
-        nudgeMessage: row[5].toString(),
-        reminderOffsets: row[6]
-          .toString()
-          .split(",")
-          .map((offset: string) => parseInt(offset.trim(), 10)),
-        notesDocumentUrl: row[7].toString(),
-        documentHeader: row[8].toString(),
+      const config: OncallConfig = {
+        scheduleName: row[0].toString(),
+        scheduleId: row[1].toString(),
       };
       configs.push(config);
     }

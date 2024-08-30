@@ -10,7 +10,6 @@ import {
 import { ChatPostMessageResponse } from "@slack/web-api/dist/response";
 import { ConversationsRepliesResponse } from "@slack/web-api/dist/response";
 import { Log } from "./checks/log";
-
 import { ChatPostEphemeralResponse } from "@slack/web-api/dist/response";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -44,7 +43,6 @@ export namespace Slack {
 
     const response = UrlFetchApp.fetch(url, params);
     const json: ChatPostMessageResponse = JSON.parse(response.getContentText());
-    // Log.log(`postMessage response: ${JSON.stringify(json)}`);
 
     return json.ok ? json : undefined;
   }
@@ -69,7 +67,6 @@ export namespace Slack {
     const result: ConversationsHistoryResponse = JSON.parse(
       response.getContentText()
     );
-    // Log.log(`listMessagesFromTimeRange response: ${JSON.stringify(result)}`);
 
     return result.ok ? (result.messages ?? []) : undefined;
   }
@@ -108,7 +105,6 @@ export namespace Slack {
     const response: UsergroupsUsersListResponse = JSON.parse(
       fetchResult.getContentText()
     );
-    // Log.log(`listUserGroupMembers response: ${JSON.stringify(response)}`);
 
     return response.ok ? response : undefined;
   }
@@ -127,7 +123,6 @@ export namespace Slack {
     const structuredResponse: UsersInfoResponse = JSON.parse(
       response.getContentText()
     );
-    // Log.log(`getUserDetails response: ${JSON.stringify(structuredResponse)}`);
 
     return structuredResponse.ok ? structuredResponse.user : undefined;
   }
@@ -151,7 +146,6 @@ export namespace Slack {
     const json: ConversationsRepliesResponse = JSON.parse(
       response.getContentText()
     );
-    // Log.log(`getAllRepliesInThread response: ${JSON.stringify(json)}`);
 
     return json.ok ? json : undefined;
   }
@@ -181,7 +175,6 @@ export namespace Slack {
     };
 
     const response = UrlFetchApp.fetch(url, options);
-    // Logger.log(response.getContentText()); // Log the response for debuggin
     const json: ChatPostEphemeralResponse = JSON.parse(
       response.getContentText()
     );
@@ -246,5 +239,27 @@ export namespace Slack {
       return url.slice(0, -1);
     }
     return result.url;
+  }
+
+  export function getUserByEmail(email: string): User | undefined {
+    Log.log(`Calling getUserByEmail with email: ${email}`);
+    const url = `https://slack.com/api/users.lookupByEmail?email=${email}`;
+    const params: GoogleAppsScript.URL_Fetch.URLFetchRequestOptions = {
+      method: "get",
+      headers: { Authorization: `Bearer ${Slack.TOKEN}` },
+      muteHttpExceptions: true,
+    };
+
+    const response = UrlFetchApp.fetch(url, params);
+    const jsonResponse: UsersInfoResponse = JSON.parse(
+      response.getContentText()
+    );
+
+    if (!jsonResponse.ok) {
+      console.error("Failed to lookup user by email:", jsonResponse.error);
+      return undefined;
+    }
+
+    return jsonResponse.user;
   }
 }
